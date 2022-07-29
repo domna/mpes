@@ -49,20 +49,36 @@ import copy
 
 N_CPU = ps.cpu_count()
 
-aperture_dict = {"2020-05-23T19:35:15":{"fa_size":{200.:((0.6748,0.6752),(-0.4252,-0.4248)),
-                                                  10.:((6.7397,6.7401),(-6.4505,-6.4501)),
-                                                  750.:((-5.354,-5.3500),(5.4498,5.4502)),
-                                                  20.:((6.7197,6.7201),(-0.4256,-0.4252)),
-                                                  500.:((-5.7255,-5.7251),(-6.5605,-6.5601)),
-                                                  100.:((0.7249,0.7253),(-6.4255,-6.4251)),
-                                                  300.:((0.6997,0.7001),(5.5497,5.5501)),
-                                                  50.:((6.6998,6.7002),(5.5498,5.5502)),
-                                                  "grid":((-5.8005,-5.8001),(-0.5252,-0.5248)),
-                                                  "open":((-10.400,-9.400),(-9.500,-8.900))},
-                                        "ca_size":{50.:(9.1220,11.1220), 300.:(-0.0500,0.0500),
-                                                   200.:(0.7000,1.5000),100:(5.1000,5.9000),
-                                                   "grid":(-5.500,-5.200),"open":(-11.200,-10.800)
-                }}}
+aperture_dict = {
+    "2018-01-23T19:35:15":{
+        "fa_size":{750.:((-3.0, -1.4), (-5.4, -4.6)),
+                   "grid":((-3.0, -1.4), (0.15, 1.75)),
+                   1500.:((-3.0, -1.4), (6.25, 7.75)),
+                   200.:((3.3, 4.4), (-5.4, -4.6)),
+                   500.:((3.3, 4.4), (0.15, 1.75)),
+                   1000.:((3.3, 4.4), (6.25, 7.75)),
+                   20.:((9.6, 10.1), (-5.4, -4.6)),
+                   50.:((9.6, 10.1), (0.15, 1.75)),
+                   100.:((9.6, 10.1), (6.25, 7.75)),
+                   "open":((-10.4, -9.4), (-9.5, -8.9))},
+        "ca_size":{50.:(8.0, 8.4), 200.:(-0.5, -0.9),
+                   100:(3.4, 3.8), "grid":(-5.3, -5.9),
+                   "open":(-12.0, -10.8)}},
+    "2020-01-23T19:35:15":{
+        "fa_size":{750.:((-4.8, -6.2), (5.0, 6.0)),
+                  "grid":((-4.8, -6.2), (-0.3, -0.7)),
+                  500.:((-4.8, -6.2), (-6.0, -7.0)),
+                  200.:((0.5, 0.9), (-0.3, -0.7)),
+                  100.:((0.5, 0.9), (-6.0, -7.0)),
+                  300.:((0.5, 0.9), (5.0, 6.0)),
+                  10.:((6.5, 6.9), (-6.0, -7.0)),  
+                  20.:((6.5, 6.9), (-0.3, -0.7)),
+                  50.:((6.5, 6.9), (5.0, 6.0)),
+                  "open":((-10.4, -9.4), (-9.5, -8.9))},
+        "ca_size":{50.:(9.0, 11.0), 300.:(-0.1, 0.1),
+                   200.:(0.7, 1.5), 100:(5.1, 5.9),
+                   "grid":(-5.5, -5.2), "open":(-11.2, -10.8)}}
+    }
 
 # ================= #
 # Utility functions #
@@ -2451,12 +2467,10 @@ class dataframeProcessor(MapParser):
         binning_dict.pop('edf') #Deepcopy doesn't work because of edf data type
         metadata_dict['binning'] = binning_dict
 
-        # To determine the timestamp from aperture_config
-        timestamp = None
+        # To determine the timestamp in aperture_config
         stamps = sorted(list(self.aperture_config) + [filestart])
         filestart_index = stamps.index(filestart)
-        if filestart_index != 0:
-            timestamp = stamps[filestart_index-1] 
+        timestamp = stamps[filestart_index-1] 
 
         # aperture metadata for old files. Other alternative: store nothing at all.
         if 'instrument' not in metadata_dict.keys():
@@ -2466,13 +2480,12 @@ class dataframeProcessor(MapParser):
         metadata_dict['instrument']['analyzer']['fa_size'] = np.nan
         metadata_dict['instrument']['analyzer']['ca_size'] = np.nan
         # get field aperture shape and size
-        if {'KTOF:Apertures:m1.RBV','KTOF:Apertures:m2.RBV'}.issubset(set(metadata_dict['file'].keys())) \
-                                                                                            and timestamp:
+        if {'KTOF:Apertures:m1.RBV','KTOF:Apertures:m2.RBV'}.issubset(set(metadata_dict['file'].keys())):
             fa_in = metadata_dict['file']['KTOF:Apertures:m1.RBV']
             fa_hor = metadata_dict['file']['KTOF:Apertures:m2.RBV']
             for k,v in self.aperture_config[timestamp]['fa_size'].items():
                 if v[0][0]<fa_in<v[0][1] and v[1][0]<fa_hor<v[1][1]:
-                    if isinstance(k, int):
+                    if isinstance(k, float):
                         metadata_dict['instrument']['analyzer']['fa_size'] = k   
                     else: # considering that only int and str type values are present
                         metadata_dict['instrument']['analyzer']['fa_shape'] = k
@@ -2481,11 +2494,11 @@ class dataframeProcessor(MapParser):
                 print("Field aperture size not found.")
 
         # get contrast aperture shape and size
-        if 'KTOF:Apertures:m3.RBV' in metadata_dict['file'] and timestamp:
+        if 'KTOF:Apertures:m3.RBV' in metadata_dict['file']:
             ca = metadata_dict['file']['KTOF:Apertures:m3.RBV']
             for k,v in self.aperture_config[timestamp]['ca_size'].items():
                 if v[0]<ca<v[1]:
-                    if isinstance(k, int):
+                    if isinstance(k, float):
                         metadata_dict['instrument']['analyzer']['ca_size'] = k   
                     else: # considering that only int and str type values are present
                         metadata_dict['instrument']['analyzer']['ca_shape'] = k
