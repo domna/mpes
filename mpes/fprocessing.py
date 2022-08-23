@@ -30,7 +30,7 @@ import scipy.interpolate as sint
 import skimage.io as skio
 from PIL import Image as pim
 import warnings as wn
-from h5py import File
+from h5pyd import File
 import psutil as ps
 import dask as d, dask.array as da, dask.dataframe as ddf
 from dask.diagnostics import ProgressBar
@@ -306,7 +306,8 @@ class hdf5Reader(File):
         self.faddress = f_addr
         eventEstimator = kwds.pop('estimator', 'Stream_0') # Dataset representing event length
         self.CHUNK_SIZE = int(kwds.pop('chunksz', 1e6))
-        super().__init__(name=self.faddress, mode='r', **kwds)
+        print(self.faddress)
+        super().__init__(domain=self.faddress, mode='r', **kwds)
 
         self.nEvents = self[eventEstimator].size
         self.groupNames = list(self)
