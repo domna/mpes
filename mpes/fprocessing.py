@@ -306,7 +306,6 @@ class hdf5Reader(File):
         self.faddress = f_addr
         eventEstimator = kwds.pop('estimator', 'Stream_0') # Dataset representing event length
         self.CHUNK_SIZE = int(kwds.pop('chunksz', 1e6))
-        print(self.faddress)
         super().__init__(domain=self.faddress, mode='r', **kwds)
 
         self.nEvents = self[eventEstimator].size
