@@ -2492,7 +2492,7 @@ class dataframeProcessor(MapParser):
             metadata_dict['file'] = {}
         
         print("Collecting lens voltages etc...")
-        with h5py.File(file0, 'r') as f:
+        with File(file0, 'r') as f:
             for k,v in f.attrs.items():
                 if "VSet" in k: #Changing VSet to V in dict keys
                     k = k[:-3]
@@ -2721,7 +2721,7 @@ class dataframeProcessor(MapParser):
             mode (str): hdf5 read/write mode
         Returns:
         """
-        with h5py.File(faddr, mode) as h5File:
+        with File(faddr, mode) as h5File:
 
             print(f'saving data to {faddr}')
 
