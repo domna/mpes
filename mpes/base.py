@@ -11,13 +11,13 @@ from . import utils as u
 from silx.io import dictdump
 import deepdish.io as dio
 import numpy as np
-import glob as g
 import natsort as nts
 import cv2
 from functools import partial
 import scipy.io as sio
 from scipy.interpolate import griddata
 import pickle
+from h5pyd import Folder
 
 
 class FileCollection(object):
@@ -88,7 +88,7 @@ class FileCollection(object):
         else:
             return terms
 
-    def gather(self, folder='', identifier=r'/*.h5', f_start=None, f_end=None, f_step=1, file_sorting=True):
+    def gather(self, folder='', identifier=r'*.h5', f_start=None, f_end=None, f_step=1, file_sorting=True):
         """
         Gather files from a folder (specified at instantiation).
 
@@ -105,9 +105,9 @@ class FileCollection(object):
 
         try:
             if folder == '':
-                self.files = g.glob(self.folder + identifier)
+                self.files = [f'{self.folder}/{file}' for file in Folder(f'{self.folder}/', identifier)]
             else:
-                self.files = g.glob(folder + identifier)
+                self.files = [f'{folder}/{file}' for file in Folder(f'{folder}/', identifier)]
 
             if file_sorting == True:
                 self.files = self._sort_terms(self.files, file_sorting)

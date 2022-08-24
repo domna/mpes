@@ -30,7 +30,7 @@ import scipy.interpolate as sint
 import skimage.io as skio
 from PIL import Image as pim
 import warnings as wn
-from h5py import File
+from h5pyd import File
 import psutil as ps
 import dask as d, dask.array as da, dask.dataframe as ddf
 from dask.diagnostics import ProgressBar
@@ -44,7 +44,6 @@ from urllib.request import urlopen
 import urllib
 import json
 import xarray as xr
-import h5py
 import copy
 
 N_CPU = ps.cpu_count()
@@ -459,7 +458,7 @@ class hdf5Reader(File):
         self.faddress = f_addr
         eventEstimator = kwds.pop('estimator', 'Stream_0') # Dataset representing event length
         self.CHUNK_SIZE = int(kwds.pop('chunksz', 1e6))
-        super().__init__(name=self.faddress, mode='r', **kwds)
+        super().__init__(domain=self.faddress, mode='r', **kwds)
 
         self.nEvents = self[eventEstimator].size
         self.groupNames = list(self)
@@ -2063,7 +2062,7 @@ class dataframeProcessor(MapParser):
         # Create the single-event dataframe
         if source == 'folder':
             # gather files first to get a sorted list.
-            self.gather(folder=self.datafolder, identifier=r'/*.'+ftype, file_sorting=True)
+            self.gather(folder=self.datafolder, identifier=r'*.'+ftype, file_sorting=True)
             self.datafiles = self.files
             self.edf = readDataframe(files=self.datafiles, ftype=ftype, timeStamps=timeStamps, **kwds)
 
@@ -2073,7 +2072,7 @@ class dataframeProcessor(MapParser):
             else:
                 # When only the datafolder address is given but needs to read partial files,
                 # first gather files from the folder, then select files and read into dataframe
-                self.gather(folder=self.datafolder, identifier=r'/*.'+ftype, file_sorting=True)
+                self.gather(folder=self.datafolder, identifier=r'*.'+ftype, file_sorting=True)
 
                 if len(fids) == 0:
                     print('Nothing is read since no file IDs (fids) is specified!')
@@ -3405,7 +3404,7 @@ def extractEDC(folder=None, files=[], axes=['t'], bins=[1000], ranges=[(65000, 1
 
     pp = parallelHDF5Processor(folder=folder, files=files)
     if len(files) == 0:
-        pp.gather(identifier='/*.h5')
+        pp.gather(identifier='*.h5')
     pp.parallelBinning_old(axes=axes, nbins=bins, ranges=ranges, combine=False, ret=False,
                         binning_kwds=binning_kwds, **kwds)
 

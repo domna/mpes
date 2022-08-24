@@ -43,3 +43,6 @@ output/
 
 # Notebooks
 examples/.ipynb_checkpoints
+
+# pyenv virtualenv
+.python-version
