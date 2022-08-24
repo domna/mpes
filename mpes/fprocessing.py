@@ -1905,7 +1905,7 @@ class dataframeProcessor(MapParser):
         # Create the single-event dataframe
         if source == 'folder':
             # gather files first to get a sorted list.
-            self.gather(folder=self.datafolder, identifier=r'/*.'+ftype, file_sorting=True)
+            self.gather(folder=self.datafolder, identifier=r'*.'+ftype, file_sorting=True)
             self.datafiles = self.files
             self.edf = readDataframe(files=self.datafiles, ftype=ftype, timeStamps=timeStamps, **kwds)
 
@@ -1915,7 +1915,7 @@ class dataframeProcessor(MapParser):
             else:
                 # When only the datafolder address is given but needs to read partial files,
                 # first gather files from the folder, then select files and read into dataframe
-                self.gather(folder=self.datafolder, identifier=r'/*.'+ftype, file_sorting=True)
+                self.gather(folder=self.datafolder, identifier=r'*.'+ftype, file_sorting=True)
 
                 if len(fids) == 0:
                     print('Nothing is read since no file IDs (fids) is specified!')
@@ -2924,7 +2924,7 @@ def extractEDC(folder=None, files=[], axes=['t'], bins=[1000], ranges=[(65000, 1
 
     pp = parallelHDF5Processor(folder=folder, files=files)
     if len(files) == 0:
-        pp.gather(identifier='/*.h5')
+        pp.gather(identifier='*.h5')
     pp.parallelBinning_old(axes=axes, nbins=bins, ranges=ranges, combine=False, ret=False,
                         binning_kwds=binning_kwds, **kwds)
 
